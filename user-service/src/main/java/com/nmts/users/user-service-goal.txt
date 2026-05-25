@@ -1,0 +1,30 @@
+User-Service
+----------------------------------------
+profile
+contact info
+business info
+purchase history
+customer-facing user data
+
+
+PROFILE DATABASE + CUSTOMER HISTORY DATABASE
+
+-------------------------------------------------------------------------
+what data belongs here
+
+name, phone, email, address, businessName, role, purchase history
+-------------------------------------------------------------------------
+
+What persistent business objects exist?
+
+- User Profile
+- Purchase History (historical customer purchases, customer history screen, past transactions)
+
+---------------------------------------------------------------------------
+Repos
+
+- UserProfileRepository
+- PurchaseHistoryRepository
+
+
+

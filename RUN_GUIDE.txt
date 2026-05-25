@@ -1,0 +1,169 @@
+=============================================================
+  NMTS - NATURAL METALS MINING TRANSPARENCY SYSTEM
+  RUNTIME GUIDE & API DOCUMENTATION
+=============================================================
+
+-------------------------------------------------------------
+1. INFRASTRUCTURE SETUP (LOCAL)
+-------------------------------------------------------------
+You have MySQL, MongoDB, and Kafka installed locally. Ensure they are running:
+
+- MySQL (3306)     -> Username: root, Password: Nikhil@420
+- MongoDB (27017)  -> Database: nmts_analytics
+- Kafka (9092)     -> KRaft mode enabled
+
+# Still need Redis via Docker? (If not installed locally)
+docker run -d --name nmts-redis -p 6379:6379 redis:7.4-alpine
+
+-------------------------------------------------------------
+2. CONFIG SERVER SETUP (LOCAL NATIVE PROFILE)
+-------------------------------------------------------------
+The config-server (8888) is configured to use the local file system.
+
+1. A directory named 'config-repo' has been created in the project root.
+2. The global configuration is stored in 'config-repo/application.yml'.
+3. The config-server is set to 'active: native' and points to this folder.
+4. No Git repository or GitHub tokens are required.
+
+To add service-specific configs, create files like:
+- config-repo/auth-service.yml
+- config-repo/user-service.yml
+
+-------------------------------------------------------------
+3. GLOBAL CONFIG (config-repo/application.yml)
+-------------------------------------------------------------
+nmts.jwt.secret: nmts-super-secret-256-bit-key-change-in-production
+nmts.jwt.expiration-ms: 86400000
+
+spring:
+  datasource:
+    username: root
+    password: Nikhil@420
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: nmts-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+-------------------------------------------------------------
+4. SERVICE STARTUP ORDER
+-------------------------------------------------------------
+Start services in this EXACT order:
+1. config-server (8888) -> Wait until http://localhost:8888/auth-service/default returns JSON.
+2. eureka-server (8761) -> Open http://localhost:8761 and wait for services to register.
+3. api-gateway (8080)   -> The security shield.
+4. auth-service (8081)
+5. user-service (8082)
+6. mining-agency-service (8083)
+7. license-service (8084)
+8. report-service (8085)
+9. government-service (8086)
+10. search-catalog-service (8087)
+11. analytics-service (8089)
+
+
+-------------------------------------------------------------
+3. ORDERED API WORKFLOW (Via API Gateway: 8080)
+-------------------------------------------------------------
+All requests to business services go through PORT 8080.
+Include header: Authorization: Bearer <JWT_TOKEN> (after login).
+
+PHASE 1: ONBOARDING
+-------------------
+1. Register Mining Agency:
+   POST http://localhost:8080/auth/register
+   Body: { "name": "Global Mines", "email": "agency@mines.com", "password": "pass", "role": "MINING_AGENCY" }
+
+2. Register Customer:
+   POST http://localhost:8080/auth/register
+   Body: { "name": "John Buyer", "email": "john@gmail.com", "password": "pass", "role": "CUSTOMER" }
+
+3. Login:
+   POST http://localhost:8080/auth/login
+   Body: { "email": "agency@mines.com", "password": "pass" }
+   -> SAVE THE TOKEN
+
+PHASE 2: AGENCY SETUP (As MINING_AGENCY)
+----------------------------------------
+4. Register Agency Profile:
+   POST http://localhost:8080/agency/register
+   Body: { "agencyName": "Global Mines Ltd", "agencyType": "PRIVATE", "registrationNumber": "REG-001", "location": "Nevada", "description": "Gold Mining" }
+
+PHASE 3: GOVERNMENT GRANT (As GOV_OFFICER - Note: Login as GOV_OFFICER first)
+----------------------------------------------------------------------------
+5. Grant License (Required to create listings):
+   POST http://localhost:8080/licenses/grant
+   Body: { "agencyId": "{AGENCY_UUID}", "agencyName": "Global Mines Ltd", "licenseType": "DAY_90", "durationDays": 90 }
+
+PHASE 4: BUSINESS OPERATIONS (As MINING_AGENCY)
+-----------------------------------------------
+6. Create Metal Listing:
+   POST http://localhost:8080/agency/listings
+   Body: { "metalName": "Gold", "metalCategory": "EARTH_METAL", "description": "24K Raw", "pricePerTon": 50000, "availableQtyTons": 10.5 }
+
+PHASE 5: CUSTOMER JOURNEY (As CUSTOMER)
+---------------------------------------
+7. Search Metals (Redis Cached):
+   GET http://localhost:8080/search/metals/by-name?metalName=Gold
+
+8. Send Purchase Request:
+   POST http://localhost:8080/agency/purchase-requests
+   Body: { "listingId": "{LISTING_UUID}", "requestedQtyTons": 2.0, "message": "Urgent delivery" }
+
+PHASE 6: SALES MANAGEMENT (As MINING_AGENCY)
+--------------------------------------------
+9. View Incoming Requests:
+   GET http://localhost:8080/agency/purchase-requests/incoming
+
+10. Approve Purchase:
+    PATCH http://localhost:8080/agency/purchase-requests/{ID}/approve
+    -> (Triggers Kafka: purchase.approved -> user-service saves history)
+
+PHASE 7: COMPLIANCE & OVERSIGHT (As REPORTER / GOV_OFFICER)
+-----------------------------------------------------------
+11. File Compliance Report (As REPORTER):
+    POST http://localhost:8080/reports
+    Body: { "agencyId": "{AGENCY_UUID}", "agencyName": "Global Mines Ltd", "title": "Illegal Dumping", "description": "Spotted at site B", "severity": "HIGH" }
+
+12. Issue Seizure Order (As GOV_OFFICER):
+    POST http://localhost:8080/government/seizures
+    Body: { "reportId": "{REPORT_UUID}", "agencyId": "{AGENCY_UUID}", "agencyName": "Global Mines Ltd", "reason": "Severe environmental breach" }
+    -> (Triggers Kafka: operation.seized -> agency-service locks operations)
+
+PHASE 8: ANALYTICS (As ADMIN)
+-----------------------------
+13. Get Platform Summary (MongoDB):
+    GET http://localhost:8080/analytics/summary
+
+14. Get Top Metals:
+    GET http://localhost:8080/analytics/metals/top?limit=5
+
+-------------------------------------------------------------
+4. KAFKA EVENT LIST (KRaft 9092)
+-------------------------------------------------------------
+The system automatically communicates via these topics:
+- agency.registered
+- listing.created
+- purchase.requested / .approved / .rejected
+- license.granted / .revoked
+- report.filed
+- operation.seized
+
+-------------------------------------------------------------
+5. POSTMAN HEADERS
+-------------------------------------------------------------
+To bypass the Gateway security check if testing services directly (not recommended):
+X-User-Id: {UUID}
+X-User-Role: ADMIN | MINING_AGENCY | CUSTOMER | REPORTER | GOV_OFFICER
+X-User-Email: user@test.com
+
+=============================================================
+END OF GUIDE
+=============================================================
