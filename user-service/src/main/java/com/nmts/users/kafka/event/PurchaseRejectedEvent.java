@@ -1,45 +1,27 @@
-package com.nmts.users.entity;
-
-
-import jakarta.persistence.*;
+package com.nmts.users.kafka.event;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-@Entity
-@Table(name="")
-public class PurchaseHistory {
-    @Id
-    private UUID id;
-
-    @Column(nullable = false)
+public class PurchaseRejectedEvent {
+    private UUID requestId;
     private UUID customerId;
-
-    @Column(nullable = false)
     private UUID agencyId;
-
     private String agencyName;
     private String metalName;
     private Double requestedQtyTons;
-
-    @Column(precision = 15, scale = 2)
     private BigDecimal pricePerTon;
-
-    @Column(precision = 15, scale = 2)
     private BigDecimal totalValue;
+    private String rejectionReason;
+    private LocalDateTime rejectedAt;
 
-    @Enumerated(EnumType.STRING)
-    private PurchaseStatus status;
-
-    private LocalDateTime processedAt;
-
-    public PurchaseHistory() {
+    public PurchaseRejectedEvent() {
     }
 
-    public PurchaseHistory(UUID id, UUID customerId, UUID agencyId, String agencyName, String metalName, Double requestedQtyTons, BigDecimal pricePerTon, BigDecimal totalValue, PurchaseStatus status, LocalDateTime processedAt) {
-        this.id = id;
+    public PurchaseRejectedEvent(UUID requestId, UUID customerId, UUID agencyId, String agencyName, String metalName, Double requestedQtyTons, BigDecimal pricePerTon, BigDecimal totalValue, String rejectionReason, LocalDateTime rejectedAt) {
+        this.requestId = requestId;
         this.customerId = customerId;
         this.agencyId = agencyId;
         this.agencyName = agencyName;
@@ -47,16 +29,16 @@ public class PurchaseHistory {
         this.requestedQtyTons = requestedQtyTons;
         this.pricePerTon = pricePerTon;
         this.totalValue = totalValue;
-        this.status = status;
-        this.processedAt = processedAt;
+        this.rejectionReason = rejectionReason;
+        this.rejectedAt = rejectedAt;
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getRequestId() {
+        return requestId;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setRequestId(UUID requestId) {
+        this.requestId = requestId;
     }
 
     public UUID getCustomerId() {
@@ -115,39 +97,39 @@ public class PurchaseHistory {
         this.totalValue = totalValue;
     }
 
-    public PurchaseStatus getStatus() {
-        return status;
+    public String getRejectionReason() {
+        return rejectionReason;
     }
 
-    public void setStatus(PurchaseStatus status) {
-        this.status = status;
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
-    public LocalDateTime getProcessedAt() {
-        return processedAt;
+    public LocalDateTime getRejectedAt() {
+        return rejectedAt;
     }
 
-    public void setProcessedAt(LocalDateTime processedAt) {
-        this.processedAt = processedAt;
+    public void setRejectedAt(LocalDateTime rejectedAt) {
+        this.rejectedAt = rejectedAt;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PurchaseHistory that = (PurchaseHistory) o;
-        return Objects.equals(id, that.id) && Objects.equals(customerId, that.customerId) && Objects.equals(agencyId, that.agencyId) && Objects.equals(agencyName, that.agencyName) && Objects.equals(metalName, that.metalName) && Objects.equals(requestedQtyTons, that.requestedQtyTons) && Objects.equals(pricePerTon, that.pricePerTon) && Objects.equals(totalValue, that.totalValue) && status == that.status && Objects.equals(processedAt, that.processedAt);
+        PurchaseRejectedEvent that = (PurchaseRejectedEvent) o;
+        return Objects.equals(requestId, that.requestId) && Objects.equals(customerId, that.customerId) && Objects.equals(agencyId, that.agencyId) && Objects.equals(agencyName, that.agencyName) && Objects.equals(metalName, that.metalName) && Objects.equals(requestedQtyTons, that.requestedQtyTons) && Objects.equals(pricePerTon, that.pricePerTon) && Objects.equals(totalValue, that.totalValue) && Objects.equals(rejectionReason, that.rejectionReason) && Objects.equals(rejectedAt, that.rejectedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, customerId, agencyId, agencyName, metalName, requestedQtyTons, pricePerTon, totalValue, status, processedAt);
+        return Objects.hash(requestId, customerId, agencyId, agencyName, metalName, requestedQtyTons, pricePerTon, totalValue, rejectionReason, rejectedAt);
     }
 
     @Override
     public String toString() {
-        return "PurchaseHistory{" +
-                "id=" + id +
+        return "PurchaseRejectedEvent{" +
+                "requestId=" + requestId +
                 ", customerId=" + customerId +
                 ", agencyId=" + agencyId +
                 ", agencyName='" + agencyName + '\'' +
@@ -155,17 +137,17 @@ public class PurchaseHistory {
                 ", requestedQtyTons=" + requestedQtyTons +
                 ", pricePerTon=" + pricePerTon +
                 ", totalValue=" + totalValue +
-                ", status=" + status +
-                ", processedAt=" + processedAt +
+                ", rejectionReason='" + rejectionReason + '\'' +
+                ", rejectedAt=" + rejectedAt +
                 '}';
     }
 
-    public static PurchaseHistoryBuilder builder() {
-        return new PurchaseHistoryBuilder();
+    public static PurchaseRejectedEventBuilder builder() {
+        return new PurchaseRejectedEventBuilder();
     }
 
-    public static class PurchaseHistoryBuilder {
-        private UUID id;
+    public static class PurchaseRejectedEventBuilder {
+        private UUID requestId;
         private UUID customerId;
         private UUID agencyId;
         private String agencyName;
@@ -173,70 +155,70 @@ public class PurchaseHistory {
         private Double requestedQtyTons;
         private BigDecimal pricePerTon;
         private BigDecimal totalValue;
-        private PurchaseStatus status;
-        private LocalDateTime processedAt;
+        private String rejectionReason;
+        private LocalDateTime rejectedAt;
 
-        PurchaseHistoryBuilder() {
+        PurchaseRejectedEventBuilder() {
         }
 
-        public PurchaseHistoryBuilder id(UUID id) {
-            this.id = id;
+        public PurchaseRejectedEventBuilder requestId(UUID requestId) {
+            this.requestId = requestId;
             return this;
         }
 
-        public PurchaseHistoryBuilder customerId(UUID customerId) {
+        public PurchaseRejectedEventBuilder customerId(UUID customerId) {
             this.customerId = customerId;
             return this;
         }
 
-        public PurchaseHistoryBuilder agencyId(UUID agencyId) {
+        public PurchaseRejectedEventBuilder agencyId(UUID agencyId) {
             this.agencyId = agencyId;
             return this;
         }
 
-        public PurchaseHistoryBuilder agencyName(String agencyName) {
+        public PurchaseRejectedEventBuilder agencyName(String agencyName) {
             this.agencyName = agencyName;
             return this;
         }
 
-        public PurchaseHistoryBuilder metalName(String metalName) {
+        public PurchaseRejectedEventBuilder metalName(String metalName) {
             this.metalName = metalName;
             return this;
         }
 
-        public PurchaseHistoryBuilder requestedQtyTons(Double requestedQtyTons) {
+        public PurchaseRejectedEventBuilder requestedQtyTons(Double requestedQtyTons) {
             this.requestedQtyTons = requestedQtyTons;
             return this;
         }
 
-        public PurchaseHistoryBuilder pricePerTon(BigDecimal pricePerTon) {
+        public PurchaseRejectedEventBuilder pricePerTon(BigDecimal pricePerTon) {
             this.pricePerTon = pricePerTon;
             return this;
         }
 
-        public PurchaseHistoryBuilder totalValue(BigDecimal totalValue) {
+        public PurchaseRejectedEventBuilder totalValue(BigDecimal totalValue) {
             this.totalValue = totalValue;
             return this;
         }
 
-        public PurchaseHistoryBuilder status(PurchaseStatus status) {
-            this.status = status;
+        public PurchaseRejectedEventBuilder rejectionReason(String rejectionReason) {
+            this.rejectionReason = rejectionReason;
             return this;
         }
 
-        public PurchaseHistoryBuilder processedAt(LocalDateTime processedAt) {
-            this.processedAt = processedAt;
+        public PurchaseRejectedEventBuilder rejectedAt(LocalDateTime rejectedAt) {
+            this.rejectedAt = rejectedAt;
             return this;
         }
 
-        public PurchaseHistory build() {
-            return new PurchaseHistory(id, customerId, agencyId, agencyName, metalName, requestedQtyTons, pricePerTon, totalValue, status, processedAt);
+        public PurchaseRejectedEvent build() {
+            return new PurchaseRejectedEvent(requestId, customerId, agencyId, agencyName, metalName, requestedQtyTons, pricePerTon, totalValue, rejectionReason, rejectedAt);
         }
 
         @Override
         public String toString() {
-            return "PurchaseHistoryBuilder{" +
-                    "id=" + id +
+            return "PurchaseRejectedEventBuilder{" +
+                    "requestId=" + requestId +
                     ", customerId=" + customerId +
                     ", agencyId=" + agencyId +
                     ", agencyName='" + agencyName + '\'' +
@@ -244,8 +226,8 @@ public class PurchaseHistory {
                     ", requestedQtyTons=" + requestedQtyTons +
                     ", pricePerTon=" + pricePerTon +
                     ", totalValue=" + totalValue +
-                    ", status=" + status +
-                    ", processedAt=" + processedAt +
+                    ", rejectionReason='" + rejectionReason + '\'' +
+                    ", rejectedAt=" + rejectedAt +
                     '}';
         }
     }

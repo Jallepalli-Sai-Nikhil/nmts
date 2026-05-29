@@ -7,8 +7,8 @@ import com.nmts.users.dto.UserProfileDTO;
 import com.nmts.users.entity.UserProfile;
 import com.nmts.users.exception.EntityNotFoundException;
 import com.nmts.users.repository.UserProfileRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,11 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
     private final UserProfileRepository userProfileRepository;
+
+    public UserService(UserProfileRepository userProfileRepository) {
+        this.userProfileRepository = userProfileRepository;
+    }
 
     @Transactional
     public void createUserProfile(CreateUserInternalDTO dto) {

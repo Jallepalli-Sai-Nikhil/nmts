@@ -6,19 +6,23 @@ import com.nmts.users.entity.PurchaseStatus;
 import com.nmts.users.kafka.event.PurchaseApprovedEvent;
 import com.nmts.users.kafka.event.PurchaseRejectedEvent;
 import com.nmts.users.service.PurchaseHistoryService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class PurchaseConsumer {
 
+    private static final Logger log = LoggerFactory.getLogger(PurchaseConsumer.class);
+
     private final PurchaseHistoryService purchaseHistoryService;
+
+    public PurchaseConsumer(PurchaseHistoryService purchaseHistoryService) {
+        this.purchaseHistoryService = purchaseHistoryService;
+    }
 
     @KafkaListener(topics = "purchase.approved", groupId = "nmts-group")
     public void consumeApproved(PurchaseApprovedEvent event) {
@@ -56,4 +60,3 @@ public class PurchaseConsumer {
         purchaseHistoryService.savePurchaseHistory(history);
     }
 }
-

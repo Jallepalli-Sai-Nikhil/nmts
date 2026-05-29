@@ -7,7 +7,6 @@ import com.nmts.users.service.UserService;
 import com.nmts.users.util.RoleGuard;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +17,17 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
     private final PurchaseHistoryService purchaseHistoryService;
     private final RoleGuard roleGuard;
+
+    public UserController(UserService userService, PurchaseHistoryService purchaseHistoryService, RoleGuard roleGuard) {
+        this.userService = userService;
+        this.purchaseHistoryService = purchaseHistoryService;
+        this.roleGuard = roleGuard;
+    }
 
     @PostMapping("/internal/create")
     public ResponseEntity<Void> createUserProfile(@RequestBody CreateUserInternalDTO dto) {
