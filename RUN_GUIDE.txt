@@ -1,0 +1,49 @@
+NMTS COMPLETE RUN GUIDE
+=======================
+
+STEP 1: START INFRASTRUCTURE (DOCKER)
+------------------------------------
+Open a terminal and run:
+docker-compose -f docker-infra.yml up -d
+
+STEP 2: CREATE KAFKA TOPICS
+---------------------------
+(Wait 10 seconds for Kafka to boot, then run these)
+docker exec -it $(docker ps -qf "name=kafka") kafka-topics --create --topic user.registered --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+docker exec -it $(docker ps -qf "name=kafka") kafka-topics --create --topic agency.registered --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+docker exec -it $(docker ps -qf "name=kafka") kafka-topics --create --topic listing.created --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+STEP 3: START CORE ECOSYSTEM
+----------------------------
+1. Start Eureka:
+   ./mvnw spring-boot:run -pl eureka-server
+
+2. Start Config Server (Wait for Eureka):
+   ./mvnw spring-boot:run -pl config-server
+
+STEP 4: START MICROSERVICES (Any Order)
+--------------------------------------
+3. Start Auth Service:
+   ./mvnw spring-boot:run -pl auth-service
+
+4. Start User Service:
+   ./mvnw spring-boot:run -pl user-service
+
+5. Start Mining Agency:
+   ./mvnw spring-boot:run -pl mining-agency-service
+
+6. Start License Service:
+   ./mvnw spring-boot:run -pl license-service
+
+7. Start Search Service:
+   ./mvnw spring-boot:run -pl search-catalog-service
+
+STEP 5: START GATEWAY (LAST)
+----------------------------
+8. Start API Gateway:
+   ./mvnw spring-boot:run -pl api-gateway
+
+=======================
+ALL SERVICES READY AT: http://localhost:8080
+EUREKA DASHBOARD: http://localhost:8761
+=======================

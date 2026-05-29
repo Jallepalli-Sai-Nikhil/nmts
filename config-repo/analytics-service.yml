@@ -1,0 +1,12 @@
+server:
+  port: 8089
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/nmts_analytics
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka

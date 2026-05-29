@@ -1,0 +1,37 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      missing-topics-fatal: false
+      ack-mode: record
+    consumer:
+      group-id: nmts-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.nmts.*"
+        session.timeout.ms: 45000
+        heartbeat.interval.ms: 3000
+        max.poll.interval.ms: 300000
+        # Reduce metadata update frequency to stop log spam
+        metadata.max.age.ms: 300000
+        reconnect.backoff.ms: 5000
+        reconnect.backoff.max.ms: 10000
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 3
+      properties:
+        retry.backoff.ms: 5000
+
+logging:
+  level:
+    org.apache.kafka.clients.NetworkClient: WARN
+    org.apache.kafka.clients.Metadata: WARN
+
+
+nmts:
+  jwt:
+    secret: nmts-super-secret-256-bit-key-change-in-production
+    expiration-ms: 86400000
